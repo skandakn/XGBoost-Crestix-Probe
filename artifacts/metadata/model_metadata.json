@@ -1,0 +1,209 @@
+{
+  "model_version": "1.0.0",
+  "model_type": "XGBRegressor",
+  "dataset_name": "LarNO_UKEA_Catchment_Benchmark",
+  "feature_order": [
+    "elevation_m",
+    "slope_pct",
+    "aspect_sin",
+    "aspect_cos",
+    "twi",
+    "dist_to_drain_m",
+    "impervious_fraction",
+    "manning_n",
+    "rain_intensity_mmh",
+    "rain_acc_15m",
+    "rain_acc_30m",
+    "rain_acc_1h",
+    "rain_acc_3h",
+    "rain_acc_6h",
+    "depth_lag_15m",
+    "depth_lag_30m",
+    "depth_rate_of_rise",
+    "horizon_min"
+  ],
+  "feature_count": 18,
+  "target_column": "water_depth_m",
+  "regressor_hyperparameters": {
+    "n_estimators": 450,
+    "max_depth": 6,
+    "learning_rate": 0.04,
+    "subsample": 0.85,
+    "colsample_bytree": 0.85,
+    "min_child_weight": 4,
+    "gamma": 0.05,
+    "reg_alpha": 0.15,
+    "reg_lambda": 1.2,
+    "objective": "reg:squarederror",
+    "eval_metric": "rmse",
+    "random_state": 42,
+    "n_jobs": -1
+  },
+  "classifier_hyperparameters": {
+    "n_estimators": 300,
+    "max_depth": 5,
+    "learning_rate": 0.05,
+    "subsample": 0.85,
+    "colsample_bytree": 0.85,
+    "objective": "multi:softprob",
+    "eval_metric": "mlogloss",
+    "num_class": 4,
+    "random_state": 42,
+    "n_jobs": -1
+  },
+  "preprocessor_stats": {
+    "elevation_m": {
+      "median": 30.518764526598034,
+      "mean": 30.34239296887269,
+      "std": 7.2697572870036336,
+      "min": 18.13818820717248,
+      "max": 42.621886831901776
+    },
+    "slope_pct": {
+      "median": 4.602253725259903,
+      "mean": 4.503381009496602,
+      "std": 2.4388932307810753,
+      "min": 0.4670786646324047,
+      "max": 8.371501653351068
+    },
+    "aspect_sin": {
+      "median": -0.1420421657807248,
+      "mean": -0.07500774050434428,
+      "std": 0.7159781526952974,
+      "min": -0.9955626401872965,
+      "max": 0.9949127853790314
+    },
+    "aspect_cos": {
+      "median": -0.3052584850153684,
+      "mean": -0.1901462447348014,
+      "std": 0.667537932676425,
+      "min": -0.98355456076028,
+      "max": 0.9989302661278912
+    },
+    "twi": {
+      "median": 9.499839593809458,
+      "mean": 9.679582380748993,
+      "std": 1.521191528406865,
+      "min": 6.997757934907109,
+      "max": 12.012690983088623
+    },
+    "dist_to_drain_m": {
+      "median": 163.79866728714413,
+      "mean": 165.53157620235817,
+      "std": 93.70783020786884,
+      "min": 5.0,
+      "max": 322.75691934799175
+    },
+    "impervious_fraction": {
+      "median": 0.6889482094999635,
+      "mean": 0.666090954692202,
+      "std": 0.1396363560992463,
+      "min": 0.46140193551484876,
+      "max": 0.9292796066207226
+    },
+    "manning_n": {
+      "median": 0.02599495747819411,
+      "mean": 0.02617258543061145,
+      "std": 0.004006669812287175,
+      "min": 0.01876941863740363,
+      "max": 0.0334304306341749
+    },
+    "rain_intensity_mmh": {
+      "median": 1.8900813561194916,
+      "mean": 10.007963223734201,
+      "std": 14.941672980390635,
+      "min": 0.0,
+      "max": 62.86598726469326
+    },
+    "rain_acc_15m": {
+      "median": 0.370529847127272,
+      "mean": 2.536605557173973,
+      "std": 3.7301834296015937,
+      "min": 0.0,
+      "max": 15.530810826179009
+    },
+    "rain_acc_30m": {
+      "median": 0.7504138463019112,
+      "mean": 5.157149626769179,
+      "std": 7.402398174067234,
+      "min": 0.009967220764899741,
+      "max": 30.588945082017737
+    },
+    "rain_acc_1h": {
+      "median": 2.147247779402026,
+      "mean": 10.473062596762567,
+      "std": 14.190263427536719,
+      "min": 0.08686680865042265,
+      "max": 57.7256947896542
+    },
+    "rain_acc_3h": {
+      "median": 24.11805584835134,
+      "mean": 31.195292230137863,
+      "std": 30.012620459947943,
+      "min": 0.2096380825355174,
+      "max": 110.98509621601083
+    },
+    "rain_acc_6h": {
+      "median": 43.88948563447991,
+      "mean": 47.2295417817909,
+      "std": 34.595447829811086,
+      "min": 0.2096380825355174,
+      "max": 117.28404008615009
+    },
+    "depth_lag_15m": {
+      "median": 0.034228658152163444,
+      "mean": 0.0829676047262201,
+      "std": 0.1120734427188521,
+      "min": 0.0,
+      "max": 0.7220536041015928
+    },
+    "depth_lag_30m": {
+      "median": 0.030631332600718333,
+      "mean": 0.08004656241702504,
+      "std": 0.11142369542414475,
+      "min": 0.0,
+      "max": 0.7220536041015928
+    },
+    "depth_rate_of_rise": {
+      "median": 0.0,
+      "mean": 0.011684169236780275,
+      "std": 0.07487876363839399,
+      "min": -0.268281435317951,
+      "max": 0.8300903820876457
+    },
+    "horizon_min": {
+      "median": 52.5,
+      "mean": 60.0,
+      "std": 35.707391107431384,
+      "min": 15.0,
+      "max": 120.0
+    }
+  },
+  "evaluation_metrics": {
+    "mae": 0.0326,
+    "rmse": 0.0736,
+    "r2": 0.8621,
+    "bias": -0.0266,
+    "max_error": 0.7766
+  },
+  "checksums_sha256": {
+    "xgb_regressor.json": "f7aedfb95e26e8e1eb1155550540297cb66137124b133b626293f5d0e414c917",
+    "xgb_classifier.json": "6052e14026f482bfbbd0f0ba4b37bb293efea1fb2d44769f13cdb21064bad85f",
+    "heldout_predictions.npy": "c4d037d8fac0153f157c321c0b37cf8b9de4d1f74f6d19e26402324a9d6422d2",
+    "shap_values_sample.npy": "87f52b08b78c2b7df228203c6021c3d734cbd221916da7ee3e921016604debac"
+  },
+  "top_features_by_gain": [
+    "depth_lag_15m",
+    "dist_to_drain_m",
+    "depth_rate_of_rise",
+    "depth_lag_30m",
+    "slope_pct"
+  ],
+  "top_features_by_shap": [
+    "depth_lag_15m",
+    "depth_rate_of_rise",
+    "rain_intensity_mmh",
+    "elevation_m",
+    "depth_lag_30m"
+  ]
+}

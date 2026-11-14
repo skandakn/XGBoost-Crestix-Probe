@@ -1,0 +1,102 @@
+# LarNO UKEA Flood-Depth Forecasting Configuration
+# Crestix Probe XGBoost Tabular Baseline
+
+model:
+  version: "1.0.0"
+  model_type: "XGBRegressor"
+  regressor_params:
+    n_estimators: 450
+    max_depth: 6
+    learning_rate: 0.04
+    subsample: 0.85
+    colsample_bytree: 0.85
+    min_child_weight: 4
+    gamma: 0.05
+    reg_alpha: 0.15
+    reg_lambda: 1.2
+    objective: "reg:squarederror"
+    eval_metric: "rmse"
+    random_state: 42
+    n_jobs: -1
+
+  classifier_params:
+    n_estimators: 300
+    max_depth: 5
+    learning_rate: 0.05
+    subsample: 0.85
+    colsample_bytree: 0.85
+    objective: "multi:softprob"
+    eval_metric: "mlogloss"
+    num_class: 4
+    random_state: 42
+    n_jobs: -1
+
+  early_stopping_rounds: 35
+
+data:
+  dataset_name: "LarNO_UKEA_Catchment_Benchmark"
+  region: "LarNO_Loughborough_Urban_Basin"
+  sensor_count: 24
+  target_column: "water_depth_m"
+  event_column: "event_id"
+  time_step_min: 5
+  forecast_horizons_min: [15, 30, 45, 60, 90, 120]
+  
+  feature_order:
+    - elevation_m
+    - slope_pct
+    - aspect_sin
+    - aspect_cos
+    - twi
+    - dist_to_drain_m
+    - impervious_fraction
+    - manning_n
+    - rain_intensity_mmh
+    - rain_acc_15m
+    - rain_acc_30m
+    - rain_acc_1h
+    - rain_acc_3h
+    - rain_acc_6h
+    - depth_lag_15m
+    - depth_lag_30m
+    - depth_rate_of_rise
+    - horizon_min
+
+  # Strict Event-based partition (Zero leakage)
+  split:
+    train_events:
+      - "event_01_10yr_summer_convective"
+      - "event_02_20yr_autumn_frontal"
+      - "event_03_30yr_summer_convective"
+      - "event_04_50yr_prolonged_winter"
+      - "event_05_50yr_flash_storm"
+      - "event_06_75yr_severe_storm"
+    val_events:
+      - "event_07_val_30yr_intense"
+      - "event_08_val_75yr_complex"
+    heldout_test_events:
+      - "event_09_test_heldout_20yr_benchmark"
+      - "event_10_test_heldout_100yr_design_flood"
+      - "event_11_test_heldout_200yr_extreme_inundation"
+
+risk_classification:
+  thresholds:
+    none: 0.05       # 0.00 to <0.05 m: Negligible surface water
+    low: 0.15        # 0.05 to <0.15 m: Low hazard (ankle depth, curb level)
+    moderate: 0.30   # 0.15 to <0.30 m: Moderate hazard (enters low exhausts, road hazard)
+    high: 0.30       # >=0.30 m: High/Extreme hazard (car flotation, structural risk)
+  class_labels:
+    0: "None (<0.05m)"
+    1: "Low (0.05-0.15m)"
+    2: "Moderate (0.15-0.30m)"
+    3: "High (>=0.30m)"
+
+paths:
+  artifacts_dir: "artifacts"
+  models_dir: "local_artifacts/models"
+  metadata_dir: "artifacts/metadata"
+  metrics_dir: "metrics"
+  figures_dir: "metrics/figures"
+  predictions_dir: "local_artifacts/predictions"
+  shap_dir: "local_artifacts/shap"
+

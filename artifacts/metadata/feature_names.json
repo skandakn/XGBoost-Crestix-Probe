@@ -1,0 +1,22 @@
+{
+  "features": [
+    "elevation_m",
+    "slope_pct",
+    "aspect_sin",
+    "aspect_cos",
+    "twi",
+    "dist_to_drain_m",
+    "impervious_fraction",
+    "manning_n",
+    "rain_intensity_mmh",
+    "rain_acc_15m",
+    "rain_acc_30m",
+    "rain_acc_1h",
+    "rain_acc_3h",
+    "rain_acc_6h",
+    "depth_lag_15m",
+    "depth_lag_30m",
+    "depth_rate_of_rise",
+    "horizon_min"
+  ]
+}

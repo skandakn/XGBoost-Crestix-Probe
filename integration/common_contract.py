@@ -366,7 +366,7 @@ class RandomForestContractAdapter:
         self.model_path = (
             Path(model_path)
             if model_path
-            else self.repo_root / "local_artifacts" / "models" / "rf_regressor.joblib"
+            else self.repo_root / "artifacts" / "random_forest_model.joblib"
         )
         self._estimator = estimator
 
@@ -386,10 +386,11 @@ class RandomForestContractAdapter:
         if not self.model_path.is_file():
             raise ArtifactNotInstalledError(
                 f"Trained Random Forest artifact not found at '{self.model_path}'. "
-                "Export best_rf_config.json model as rf_regressor.joblib first."
+                "Provide artifacts/random_forest_model.joblib per docs/ARTIFACT_MANIFEST.md."
             )
 
-        self._estimator = joblib.load(self.model_path)
+        loaded = joblib.load(self.model_path)
+        self._estimator = loaded["model"] if isinstance(loaded, Mapping) else loaded
         return self._estimator
 
     def predict_batch(

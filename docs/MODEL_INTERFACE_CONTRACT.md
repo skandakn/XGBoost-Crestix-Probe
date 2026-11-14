@@ -13,7 +13,7 @@
 | :--- | :--- | :--- | :--- |
 | **`XGBoost-Crestix-Probe`** | Active codebase with two pipelines: (1) 18-feature `src/crestix_xgb/` (`v1.0.0`) & (2) Person 1's 43-feature `data_pipeline/` + `scripts/evaluate_common_pipeline.py` (`v2.0.0-common`) | `crestix_xgb.predict.FloodInferenceEngine` & `predict_depth(features)` | **Inspected & Wrapped** via `integration/common_contract.py` (`XGBoostContractAdapter`, `CANONICAL_PERSON1_COMMON_43_FEATURES`) |
 | **`Linear-Regression---Crestix-Probe`** | Contains Person 7's evaluation framework (`evaluation_metrics.py`, `evaluate_model.py`, `plotting_utils.py`, 9 tests) + Person 8's `comparison.py` report | *Not yet present in repository* | **Pending Linear Regression training/inference module & weights** |
-| **`Random-Forest---Crestix-Probe`** | Contains Person 5's tuning & feature engineering (`rf_feature_builder.py` with 11 features, `random_forest_tuning.py`, `best_rf_config.json`, `final_validation_report.md`) | `sklearn.ensemble.RandomForestRegressor` (no saved inference module/weights committed yet) | **Inspected & Wrapped** via `RandomForestContractAdapter` (`CANONICAL_RF_11_FEATURES`); awaiting saved `.joblib` artifact |
+| **`Random-Forest---Crestix-Probe`** | Active codebase: `predict.py` (`load_rf_artifact`, `predict_from_dataframe`), `artifacts/random_forest_model.joblib`, `src/rf_flood/dataset.py`, `requirements.txt`, plus Person 5's `rf_feature_builder.py` (11 features) | `predict.predict_from_dataframe(artifact, df)` & `sklearn.ensemble.RandomForestRegressor` | **Inspected & Wrapped** via `RandomForestContractAdapter` (`artifacts/random_forest_model.joblib`) |
 
 ---
 

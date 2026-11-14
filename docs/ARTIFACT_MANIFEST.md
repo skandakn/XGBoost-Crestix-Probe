@@ -30,5 +30,6 @@ Large model binaries and dataset tensors are **never committed to Git**. They ar
 
 ## 3. Random Forest (`skandakn/Random-Forest---Crestix-Probe`)
 
-- **Status:** `PARTIAL` — Contains Person 5's `best_rf_config.json`, `best_rf_config.yaml`, `rf_feature_builder.py` (11 features), `random_forest_tuning.py`, and `final_validation_report.md`.
-- **Expected Model Artifact Path (not in Git; `*.pkl` / `*.joblib` gitignored):** `local_artifacts/models/rf_regressor.joblib` (pending export/host URL from Random Forest owner).
+- **Status:** `AVAILABLE` — Trained `RandomForestRegressor` bundle committed at `artifacts/random_forest_model.joblib` (`4,622,217` bytes) alongside `predict.py`, `train_random_forest.py`, `configs/rf_config.yaml`, `requirements.txt`, and `outputs/evaluation_metrics.json`.
+- **Reproducibility Pins (`outputs/evaluation_metrics.json`):** `python 3.11.9`, `scikit-learn 1.9.1`, `numpy 2.4.6`, `pandas 3.1.1`, `joblib 1.6.0`, `random_seed 42`.
+- **Dataset Scope Note:** Trained & evaluated on synthetic UKEA `32x32` data (`synthetic_ukea_32x32`; MAE `0.00509 m`, RMSE `0.00886 m`, R² `0.8145`) with `predict.py` expecting `df[artifact["feature_names"]]` (+`event_id`, `grid_y`, `grid_x`). Also contains Person 5's 11-feature `rf_feature_builder.py` & `best_rf_config.json`.

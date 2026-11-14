@@ -1,0 +1,11 @@
+{
+  "event_id": "event_005",
+  "storm_severity": "cloudburst",
+  "peak_rainfall_mm_5min": 35.00822830200195,
+  "total_rainfall_mm": 383.2679443359375,
+  "max_simulated_depth_m": 1.3853721618652344,
+  "timesteps": 36,
+  "dt_minutes": 5.0,
+  "dx_meters": 8.0,
+  "synthetic": true
+}

@@ -54,12 +54,11 @@ coverage.xml
 *.ubj
 *.joblib
 *.pkl
-*.npy
-*.npz
 *.parquet
 *.h5
 *.hdf5
-data/
+data/raw/
+data/processed/
 raw_data/
 local_artifacts/
 artifacts/models/*.ubj

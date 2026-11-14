@@ -1,0 +1,42 @@
+{
+  "contract_version": "1.0.0",
+  "note": "Canonical input/output schema example. The example output values below are illustrative contract shape examples; live values come from trained model inference.",
+  "sample_inputs": [
+    {
+      "event_id": "event_09_test_heldout_20yr_benchmark",
+      "grid_row": 15,
+      "grid_col": 16,
+      "timestamp_utc": "2026-11-14T12:00:00Z",
+      "forecast_horizon_min": 30,
+      "elevation_m": 25.4,
+      "slope_pct": 3.85,
+      "aspect_sin": -0.14,
+      "aspect_cos": -0.31,
+      "twi": 9.8,
+      "dist_to_drain_m": 140.0,
+      "impervious_fraction": 0.72,
+      "manning_n": 0.024,
+      "rain_intensity_mmh": 32.0,
+      "rain_acc_15m": 7.8,
+      "rain_acc_30m": 14.5,
+      "rain_acc_1h": 24.0,
+      "rain_acc_3h": 38.0,
+      "rain_acc_6h": 45.0,
+      "previous_water_depth_m": 0.095,
+      "depth_lag_15m": 0.095,
+      "depth_lag_30m": 0.062,
+      "depth_rate_of_rise": 0.132
+    }
+  ],
+  "expected_output_schema": {
+    "event_id": "event_09_test_heldout_20yr_benchmark",
+    "grid_row": 15,
+    "grid_col": 16,
+    "forecast_horizon_min": 30,
+    "predicted_water_depth_m": "<float >= 0.0 from model inference>",
+    "predicted_water_depth_cm": "<predicted_water_depth_m * 100.0>",
+    "model_name": "xgboost | linear_regression | random_forest",
+    "model_version": "1.0.0",
+    "units": "m (and cm)"
+  }
+}

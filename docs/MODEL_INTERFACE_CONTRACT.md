@@ -11,9 +11,9 @@
 
 | Model Repository | Inspection Findings | Prediction Interface | Current Integration Status |
 | :--- | :--- | :--- | :--- |
-| **`XGBoost-Crestix-Probe`** | Active codebase with `crestix_xgb`, `data_pipeline`, `artifacts/metadata/model_metadata.json`, `artifacts/metadata/feature_names.json` | `crestix_xgb.predict.FloodInferenceEngine` & `predict_depth(features)` | **Inspected & Wrapped** via `integration/common_contract.py` (`XGBoostContractAdapter`) |
-| **`Linear-Regression---Crestix-Probe`** | Currently contains Person 7's evaluation framework (`evaluation_metrics.py`, `evaluate_model.py`, `plotting_utils.py`, `tests/`) | *Not yet present in repository* | **Pending LR model & Person 1 schema push** |
-| **`Random-Forest---Crestix-Probe`** | Empty GitHub repository (`size: 0`, 0 commits, 0 branches) | *Not yet present in repository* | **Pending Random Forest repository push** |
+| **`XGBoost-Crestix-Probe`** | Active codebase with two pipelines: (1) 18-feature `src/crestix_xgb/` (`v1.0.0`) & (2) Person 1's 43-feature `data_pipeline/` + `scripts/evaluate_common_pipeline.py` (`v2.0.0-common`) | `crestix_xgb.predict.FloodInferenceEngine` & `predict_depth(features)` | **Inspected & Wrapped** via `integration/common_contract.py` (`XGBoostContractAdapter`, `CANONICAL_PERSON1_COMMON_43_FEATURES`) |
+| **`Linear-Regression---Crestix-Probe`** | Contains Person 7's evaluation framework (`evaluation_metrics.py`, `evaluate_model.py`, `plotting_utils.py`, 9 tests) + Person 8's `comparison.py` report | *Not yet present in repository* | **Pending Linear Regression training/inference module & weights** |
+| **`Random-Forest---Crestix-Probe`** | Contains Person 5's tuning & feature engineering (`rf_feature_builder.py` with 11 features, `random_forest_tuning.py`, `best_rf_config.json`, `final_validation_report.md`) | `sklearn.ensemble.RandomForestRegressor` (no saved inference module/weights committed yet) | **Inspected & Wrapped** via `RandomForestContractAdapter` (`CANONICAL_RF_11_FEATURES`); awaiting saved `.joblib` artifact |
 
 ---
 
@@ -63,6 +63,26 @@ Verified against `XGBoost-Crestix-Probe/artifacts/metadata/feature_names.json`:
 16. `depth_lag_30m`
 17. `depth_rate_of_rise`
 18. `horizon_min`
+
+### Canonical Random Forest 11-Feature Order
+
+Verified against `Random-Forest---Crestix-Probe/rf_feature_builder.py` (`FEATURE_NAMES`):
+
+1. `dem`
+2. `slope_x`
+3. `slope_y`
+4. `slope_mag`
+5. `elev_above_local_min`
+6. `t_norm`
+7. `h_init`
+8. `rain_t`
+9. `rain_prev1`
+10. `rain_prev2`
+11. `rain_cum`
+
+### Person 1 Common 43-Feature Order (`v2.0.0-common`)
+
+Verified against `XGBoost-Crestix-Probe/artifacts/metadata/common_model_metadata.json` (`CANONICAL_PERSON1_COMMON_43_FEATURES` in `integration/common_contract.py`), predicting `target_depth_lead_30m` (+30 min, meters) with flood threshold `0.03 m`.
 
 ### Standardized Output Schema (`StandardizedPredictionOutput`)
 

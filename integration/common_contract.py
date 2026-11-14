@@ -2,9 +2,9 @@
 
 Standardizes inputs, units (meters & centimeters), spatial grid coordinates,
 event IDs, forecast horizons, and model metadata across:
-- XGBoost (`skandakn/XGBoost-Crestix-Probe`)
-- Linear Regression (`skandakn/Linear-Regression---Crestix-Probe`, pending model code)
-- Random Forest (`skandakn/Random-Forest---Crestix-Probe`, pending repository push)
+- XGBoost (`skandakn/XGBoost-Crestix-Probe`: 18-feature `src/crestix_xgb/` & 43-feature Person 1 common schema)
+- Linear Regression (`skandakn/Linear-Regression---Crestix-Probe`, pending model training/inference code)
+- Random Forest (`skandakn/Random-Forest---Crestix-Probe`: 11-feature `rf_feature_builder.py`, pending trained artifact & inference wrapper)
 
 Does NOT alter internal model implementations.
 """
@@ -41,6 +41,68 @@ CANONICAL_XGB_FEATURE_ORDER: tuple[str, ...] = (
     "depth_lag_30m",
     "depth_rate_of_rise",
     "horizon_min",
+)
+
+# Exact 43-feature canonical order from Person 1 common pipeline (`artifacts/metadata/common_model_metadata.json`)
+CANONICAL_PERSON1_COMMON_43_FEATURES: tuple[str, ...] = (
+    "elevation",
+    "slope_magnitude",
+    "slope_x",
+    "slope_y",
+    "aspect_sin",
+    "aspect_cos",
+    "laplacian_elevation",
+    "profile_curvature",
+    "plan_curvature",
+    "local_elevation_std_3x3",
+    "local_elevation_std_5x5",
+    "tpi_3x3",
+    "tpi_5x5",
+    "neighbour_elevation_diff_mean",
+    "neighbour_elevation_diff_min",
+    "neighbour_elevation_diff_max",
+    "flow_accumulation_proxy",
+    "is_building_mask",
+    "rainfall_intensity_current",
+    "rainfall_cumulative",
+    "rainfall_max_so_far",
+    "rainfall_rate_of_change",
+    "rainfall_window_15m",
+    "rainfall_mean_15m",
+    "rainfall_window_30m",
+    "rainfall_mean_30m",
+    "rainfall_window_60m",
+    "rainfall_mean_60m",
+    "current_water_depth",
+    "water_depth_rate_of_rise",
+    "water_depth_acceleration",
+    "neighbour_water_depth_mean_3x3",
+    "neighbour_water_depth_max_3x3",
+    "hydraulic_head",
+    "hydraulic_head_grad_mag",
+    "water_depth_lag_5m",
+    "water_depth_lag_10m",
+    "water_depth_lag_15m",
+    "norm_coord_x",
+    "norm_coord_y",
+    "dist_to_center",
+    "time_since_onset_min",
+    "time_fraction",
+)
+
+# Exact 11-feature canonical order from Random-Forest---Crestix-Probe/rf_feature_builder.py
+CANONICAL_RF_11_FEATURES: tuple[str, ...] = (
+    "dem",
+    "slope_x",
+    "slope_y",
+    "slope_mag",
+    "elev_above_local_min",
+    "t_norm",
+    "h_init",
+    "rain_t",
+    "rain_prev1",
+    "rain_prev2",
+    "rain_cum",
 )
 
 
@@ -165,6 +227,32 @@ class StandardizedCellInput:
         fmap = self.to_xgb_feature_dict()
         return [fmap[name] for name in feature_order]
 
+    def to_rf_feature_dict(self, time_norm: float = 0.5) -> dict[str, float]:
+        """Map standardized input into the 11 features expected by Random-Forest---Crestix-Probe."""
+        slope_mag = float(self.slope_pct) / 100.0
+        slope_x = slope_mag * float(self.aspect_cos)
+        slope_y = slope_mag * float(self.aspect_sin)
+        return {
+            "dem": float(self.elevation_m),
+            "slope_x": slope_x,
+            "slope_y": slope_y,
+            "slope_mag": slope_mag,
+            "elev_above_local_min": 0.0,
+            "t_norm": float(time_norm),
+            "h_init": float(self.previous_water_depth_m),
+            "rain_t": float(self.rain_intensity_mmh),
+            "rain_prev1": float(self.rain_intensity_mmh),
+            "rain_prev2": float(self.rain_intensity_mmh),
+            "rain_cum": float(self.rain_acc_1h),
+        }
+
+    def to_rf_ordered_vector(
+        self, feature_order: Sequence[str] = CANONICAL_RF_11_FEATURES
+    ) -> list[float]:
+        """Return Random Forest features strictly aligned to CANONICAL_RF_11_FEATURES."""
+        fmap = self.to_rf_feature_dict()
+        return [fmap[name] for name in feature_order]
+
 
 @dataclass(frozen=True)
 class StandardizedPredictionOutput:
@@ -254,24 +342,100 @@ class XGBoostContractAdapter:
         feature_dicts = [item.to_xgb_feature_dict() for item in inputs]
         raw_depths_m = np.asarray(engine.predict(feature_dicts), dtype=float).ravel()
 
-        if raw_depths_m.shape[0] != len(inputs):
-            raise IntegrationContractError(
-                f"Prediction length mismatch: expected {len(inputs)}, got {raw_depths_m.shape[0]}."
+        return _format_prediction_outputs(
+            inputs=inputs,
+            raw_depths_m=raw_depths_m,
+            model_name=self.model_name,
+            model_version=self.model_version,
+        )
+
+
+class RandomForestContractAdapter:
+    """Non-invasive integration wrapper for scikit-learn RandomForestRegressor models."""
+
+    model_name = "random_forest"
+    model_version = "1.0.0"
+
+    def __init__(
+        self,
+        repo_root: Optional[str | Path] = None,
+        model_path: Optional[str | Path] = None,
+        estimator: Optional[Any] = None,
+    ) -> None:
+        self.repo_root = Path(repo_root) if repo_root else Path(__file__).resolve().parent.parent
+        self.model_path = (
+            Path(model_path)
+            if model_path
+            else self.repo_root / "local_artifacts" / "models" / "rf_regressor.joblib"
+        )
+        self._estimator = estimator
+
+    def load(self) -> Any:
+        """Load trained scikit-learn RandomForestRegressor via joblib when installed."""
+        if self._estimator is not None:
+            return self._estimator
+
+        try:
+            importlib.import_module("sklearn")
+            joblib = importlib.import_module("joblib")
+        except ImportError as exc:
+            raise DependencyNotInstalledError(
+                "Python packages 'scikit-learn' and 'joblib' are required for Random Forest."
+            ) from exc
+
+        if not self.model_path.is_file():
+            raise ArtifactNotInstalledError(
+                f"Trained Random Forest artifact not found at '{self.model_path}'. "
+                "Export best_rf_config.json model as rf_regressor.joblib first."
             )
 
-        outputs: list[StandardizedPredictionOutput] = []
-        for item, depth_m in zip(inputs, raw_depths_m):
-            clamped_m = round(max(0.0, float(depth_m)), 6)
-            outputs.append(
-                StandardizedPredictionOutput(
-                    event_id=item.event_id,
-                    grid_row=item.grid_row,
-                    grid_col=item.grid_col,
-                    forecast_horizon_min=item.forecast_horizon_min,
-                    predicted_water_depth_m=clamped_m,
-                    predicted_water_depth_cm=round(clamped_m * 100.0, 4),
-                    model_name=self.model_name,
-                    model_version=self.model_version,
-                )
+        self._estimator = joblib.load(self.model_path)
+        return self._estimator
+
+    def predict_batch(
+        self, inputs: Sequence[StandardizedCellInput]
+    ) -> list[StandardizedPredictionOutput]:
+        """Run standardized batch prediction while preserving event_id and grid coordinates."""
+        if not inputs:
+            raise ValueError("inputs must contain at least one StandardizedCellInput.")
+
+        estimator = self.load()
+        matrix = np.asarray([item.to_rf_ordered_vector() for item in inputs], dtype=np.float32)
+        raw_depths_m = np.asarray(estimator.predict(matrix), dtype=float).ravel()
+
+        return _format_prediction_outputs(
+            inputs=inputs,
+            raw_depths_m=raw_depths_m,
+            model_name=self.model_name,
+            model_version=self.model_version,
+        )
+
+
+def _format_prediction_outputs(
+    inputs: Sequence[StandardizedCellInput],
+    raw_depths_m: np.ndarray,
+    model_name: str,
+    model_version: str,
+) -> list[StandardizedPredictionOutput]:
+    """Validate prediction length and attach event_id, grid coordinates, and depth units."""
+    if raw_depths_m.shape[0] != len(inputs):
+        raise IntegrationContractError(
+            f"Prediction length mismatch: expected {len(inputs)}, got {raw_depths_m.shape[0]}."
+        )
+
+    outputs: list[StandardizedPredictionOutput] = []
+    for item, depth_m in zip(inputs, raw_depths_m):
+        clamped_m = round(max(0.0, float(depth_m)), 6)
+        outputs.append(
+            StandardizedPredictionOutput(
+                event_id=item.event_id,
+                grid_row=item.grid_row,
+                grid_col=item.grid_col,
+                forecast_horizon_min=item.forecast_horizon_min,
+                predicted_water_depth_m=clamped_m,
+                predicted_water_depth_cm=round(clamped_m * 100.0, 4),
+                model_name=model_name,
+                model_version=model_version,
             )
-        return outputs
+        )
+    return outputs

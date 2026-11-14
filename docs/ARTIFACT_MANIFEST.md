@@ -24,10 +24,11 @@ Large model binaries and dataset tensors are **never committed to Git**. They ar
 
 ## 2. Linear Regression (`skandakn/Linear-Regression---Crestix-Probe`)
 
-- **Status:** `PENDING` — Repository currently contains only Person 7's evaluation framework (`evaluation_metrics.py`, `evaluate_model.py`, `plotting_utils.py`) and Person 9 integration files. No trained Linear Regression model artifact or training script has been pushed yet.
+- **Status:** `PENDING` — Repository currently contains Person 7's evaluation framework (`evaluation_metrics.py`, `evaluate_model.py`, `plotting_utils.py`), Person 8's model comparison report (`comparison.py`, `comparison/`), and Person 9 integration files. No trained Linear Regression model artifact or training script has been pushed yet.
 
 ---
 
 ## 3. Random Forest (`skandakn/Random-Forest---Crestix-Probe`)
 
-- **Status:** `PENDING` — Upstream GitHub repository is currently empty (`0` commits). Awaiting model code and artifact manifest from the Random Forest team.
+- **Status:** `PARTIAL` — Contains Person 5's `best_rf_config.json`, `best_rf_config.yaml`, `rf_feature_builder.py` (11 features), `random_forest_tuning.py`, and `final_validation_report.md`.
+- **Expected Model Artifact Path (not in Git; `*.pkl` / `*.joblib` gitignored):** `local_artifacts/models/rf_regressor.joblib` (pending export/host URL from Random Forest owner).

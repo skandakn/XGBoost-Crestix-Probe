@@ -20,9 +20,12 @@ import numpy as np
 import pytest
 
 from integration.common_contract import (
+    CANONICAL_PERSON1_COMMON_43_FEATURES,
+    CANONICAL_RF_11_FEATURES,
     CANONICAL_XGB_FEATURE_ORDER,
     ArtifactNotInstalledError,
     DependencyNotInstalledError,
+    RandomForestContractAdapter,
     StandardizedCellInput,
     XGBoostContractAdapter,
     load_xgb_feature_order,
@@ -31,6 +34,10 @@ from integration.common_contract import (
 
 REPO_ROOT = Path(__file__).resolve().parent
 HAS_XGBOOST_PKG = importlib.util.find_spec("xgboost") is not None
+HAS_SKLEARN_JOBLIB = (
+    importlib.util.find_spec("sklearn") is not None
+    and importlib.util.find_spec("joblib") is not None
+)
 XGB_WEIGHTS_PATH = REPO_ROOT / "local_artifacts" / "models" / "xgb_regressor.json"
 
 
@@ -46,6 +53,17 @@ class _MockEngine:
             [max(0.0, f["depth_lag_15m"] + 0.002 * f["rain_intensity_mmh"]) for f in features],
             dtype=float,
         )
+
+
+class _MockRFEstimator:
+    """Explicit sklearn-style test double for verifying RF 11-feature spatial preservation."""
+
+    def __init__(self) -> None:
+        self.received_shape: tuple[int, ...] = ()
+
+    def predict(self, matrix: np.ndarray) -> np.ndarray:
+        self.received_shape = matrix.shape
+        return np.array([max(0.0, float(row[6]) + 0.001 * float(row[7])) for row in matrix])
 
 
 def test_common_input_contract_validation_and_unit_normalization() -> None:
@@ -184,3 +202,53 @@ def test_live_xgboost_engine_load_and_predict() -> None:
     out = adapter.predict_batch(sample)
     assert len(out) == 1
     assert out[0].predicted_water_depth_m >= 0.0
+
+
+def test_person1_common_43_feature_order_if_present() -> None:
+    common_meta = REPO_ROOT / "artifacts" / "metadata" / "common_model_metadata.json"
+    if not common_meta.is_file():
+        pytest.skip("artifacts/metadata/common_model_metadata.json not present in this repository.")
+    data = json.loads(common_meta.read_text(encoding="utf-8"))
+    assert tuple(data["feature_order"]) == CANONICAL_PERSON1_COMMON_43_FEATURES
+    assert len(CANONICAL_PERSON1_COMMON_43_FEATURES) == 43
+
+
+def test_rf_11_feature_order_if_present() -> None:
+    rf_builder = REPO_ROOT / "rf_feature_builder.py"
+    if not rf_builder.is_file():
+        pytest.skip("rf_feature_builder.py not present in this repository.")
+    from rf_feature_builder import FEATURE_NAMES  # type: ignore[import-not-found]
+
+    assert tuple(FEATURE_NAMES) == CANONICAL_RF_11_FEATURES
+    assert len(CANONICAL_RF_11_FEATURES) == 11
+
+
+def test_rf_adapter_preserves_spatial_metadata_and_handles_missing_artifact(tmp_path: Path) -> None:
+    mock_est = _MockRFEstimator()
+    adapter = RandomForestContractAdapter(repo_root=REPO_ROOT, estimator=mock_est)
+    cells = [
+        StandardizedCellInput(
+            event_id="r300y_p0.1_d3h_1",
+            grid_row=4,
+            grid_col=9,
+            forecast_horizon_min=30,
+            elevation_m=18.2,
+            slope_pct=2.0,
+            rain_intensity_mmh=42.0,
+            previous_water_depth_m=0.14,
+        )
+    ]
+    out = adapter.predict_batch(cells)
+    assert mock_est.received_shape == (1, 11)
+    assert out[0].event_id == "r300y_p0.1_d3h_1"
+    assert (out[0].grid_row, out[0].grid_col) == (4, 9)
+    assert out[0].model_name == "random_forest"
+    assert out[0].predicted_water_depth_cm == pytest.approx(out[0].predicted_water_depth_m * 100.0)
+
+    missing_adapter = RandomForestContractAdapter(
+        repo_root=REPO_ROOT,
+        model_path=tmp_path / "missing_rf.joblib",
+    )
+    expected_exc = ArtifactNotInstalledError if HAS_SKLEARN_JOBLIB else DependencyNotInstalledError
+    with pytest.raises(expected_exc):
+        missing_adapter.predict_batch(cells)

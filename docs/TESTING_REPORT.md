@@ -19,27 +19,33 @@ Executed `python -m pip list` on the integration host (`Python 3.12.10`):
 - **Existing Suite (`python -m pytest -v`):**
   - **Result:** Collection stopped with 8 errors (`ModuleNotFoundError: No module named 'xgboost'` and `No module named 'scipy'`).
   - **Artifacts:** `local_artifacts/models/xgb_regressor.json` is stored externally on Google Drive and not present in Git.
-- **Person 9 Integration Suite (`python -m pytest integration_test.py -v`):** **5 passed, 1 skipped** (`0.09s`).
+- **Person 9 Integration Suite (`python -m pytest integration_test.py -v`):** **7 passed, 2 skipped** (`0.09s`).
   - Verifies `StandardizedCellInput` validation and `cm -> m` normalization (`PASSED`).
   - Verifies exact 18-feature ordering match against `artifacts/metadata/feature_names.json` (`PASSED`).
-  - Verifies spatial `(event_id, grid_row, grid_col)` preservation using an explicit mock engine (`PASSED`).
-  - Verifies `DependencyNotInstalledError` / `ArtifactNotInstalledError` when `xgboost` or `xgb_regressor.json` is absent (`PASSED`).
+  - Verifies exact Person 1 43-feature ordering match against `artifacts/metadata/common_model_metadata.json` (`PASSED`).
+  - Verifies spatial `(event_id, grid_row, grid_col)` preservation on mock XGBoost & Random Forest engines (`PASSED`).
+  - Verifies `DependencyNotInstalledError` / `ArtifactNotInstalledError` when `xgboost` or weights are absent (`PASSED`).
   - Verifies `samples/sample_input_output.json` fixture alignment (`PASSED`).
-  - Live `FloodInferenceEngine` test (`test_live_xgboost_engine_load_and_predict`) is marked `@pytest.mark.skipif(not (HAS_XGBOOST_PKG and XGB_WEIGHTS_PATH.is_file()))` and was **SKIPPED** on this host due to missing `xgboost` package and un-downloaded `local_artifacts/models/xgb_regressor.json`.
+  - Skipped (`2`): `test_rf_11_feature_order_if_present` (belongs to RF repo) and `test_live_xgboost_engine_load_and_predict` (`xgboost` / `xgb_regressor.json` absent on host).
 
 ### B. `skandakn/Linear-Regression---Crestix-Probe`
-- **Combined Suite (`python -m pytest tests/test_evaluation_framework.py integration_test.py -v`):** **13 passed, 2 skipped** (`0.44s`).
+- **Combined Suite (`python -m pytest tests/test_evaluation_framework.py integration_test.py -v`):** **14 passed, 4 skipped** (`0.60s`).
   - Person 7 Evaluation Suite (`tests/test_evaluation_framework.py`): **9 passed**.
-  - Person 9 Integration Suite (`integration_test.py`): **4 passed, 2 skipped** (`test_xgboost_feature_names_match_canonical_order_if_present` skipped because `artifacts/metadata/feature_names.json` belongs to the XGBoost repo, and `test_live_xgboost_engine_load_and_predict` skipped due to missing `xgboost`/`xgb_regressor.json`).
-- **Integration Blocker Found:** Repository currently contains Person 7's evaluation framework and Person 9's integration files only; no Linear Regression model code, trained weights, or Person 1 common schema has been pushed yet.
+  - Person 8 Comparison Report (`comparison.py`, `comparison/`): verified no Linear Regression model code or LR weights exist yet.
+  - Person 9 Integration Suite (`integration_test.py`): **5 passed, 4 skipped** (repo-specific feature/artifact checks skipped cleanly).
+- **Integration Blocker Found:** No Linear Regression training/prediction module or serialized weights have been pushed yet.
 
 ### C. `skandakn/Random-Forest---Crestix-Probe`
-- **Integration Blocker Found:** Repository is currently empty (`0` commits, `0` branches on GitHub). No Random Forest code, dependencies, or prediction interface exists to test yet.
+- **Existing Suite (`python -m pytest -v`):** Collection fails with **1 error** (`ModuleNotFoundError: No module named 'matplotlib'` when importing `random_forest_tuning.py`; `scikit-learn` and `pyyaml` are also absent on this host).
+- **Person 9 Integration Suite (`python -m pytest integration_test.py -v`):** **6 passed, 3 skipped** (`0.36s`).
+  - Verifies exact 11-feature match (`CANONICAL_RF_11_FEATURES`) against `rf_feature_builder.FEATURE_NAMES` (`PASSED`), preserves `(event_id, grid_row, grid_col)` on mock estimator predictions (`PASSED`), and raises `DependencyNotInstalledError` / `ArtifactNotInstalledError` cleanly when `scikit-learn`/`joblib` or `rf_regressor.joblib` is missing (`PASSED`).
+  - Skipped (`3`): XGBoost-specific metadata (`feature_names.json`, `common_model_metadata.json`) and live XGBoost engine check.
+- **Integration Blocker Found:** Contains Person 5's feature builder and tuning script, but lacks a dedicated `requirements.txt`, inference wrapper, and exported `.joblib` checkpoint.
 
 ---
 
 ## 3. Summary of Action Items for Model Owners
 
-1. **XGBoost Team:** No code blockers; ensure deployment environment installs `requirements.txt` (`xgboost`, `scipy`, `scikit-learn`) and downloads `xgb_regressor.json` (SHA-256 verified).
-2. **Linear Regression & Person 1:** Push Linear Regression training/prediction module + Person 1's finalized schema so `LinearRegressionContractAdapter` can be wired and tested.
-3. **Random Forest Team:** Push initial Random Forest codebase and artifact manifest to `skandakn/Random-Forest---Crestix-Probe`.
+1. **XGBoost Team:** Both the 18-feature (`v1.0.0`, Google Drive) and Person 1 43-feature (`v2.0.0-common`, `scripts/evaluate_common_pipeline.py`) pipelines are documented; ensure deployment installs `requirements.txt` (`xgboost`, `scipy`, `scikit-learn`) and downloads `xgb_regressor.json` (or serializes the common 43-feature checkpoint).
+2. **Linear Regression Team:** Push Linear Regression training/prediction module and serialized weights so an adapter can be wired and tested.
+3. **Random Forest Team:** Add `requirements.txt` (`scikit-learn`, `joblib`, `matplotlib`, `pyyaml`, `numpy`, `pandas`) and export the trained `RandomForestRegressor` checkpoint (`rf_regressor.joblib`) for `RandomForestContractAdapter`.

@@ -1,0 +1,11 @@
+{
+  "event_id": "event_001",
+  "storm_severity": "light",
+  "peak_rainfall_mm_5min": 2.911973237991333,
+  "total_rainfall_mm": 35.185733795166016,
+  "max_simulated_depth_m": 0.06994759291410446,
+  "timesteps": 36,
+  "dt_minutes": 5.0,
+  "dx_meters": 8.0,
+  "synthetic": true
+}

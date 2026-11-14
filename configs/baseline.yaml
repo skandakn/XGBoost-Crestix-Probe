@@ -1,0 +1,102 @@
+# ==============================================================================
+# Crestix Probe — XGBoost Data Pipeline Configuration
+# Target Domain: LarNO UKEA 32x32 Benchmark Catchment
+# ==============================================================================
+
+dataset:
+  name: "LarNO-UKEA-32x32"
+  description: "UK Environment Agency urban flood benchmark region from LarNO study"
+  grid_rows: 32
+  grid_cols: 32
+  total_cells: 1024
+  spatial_resolution_m: 8.0          # Grid cell dimension: 8 meters per cell (256m x 256m domain)
+  temporal_resolution_min: 5.0       # Time step duration: 5 minutes per frame (dt = 300s)
+  raw_data_dir: "data/raw"
+  processed_data_dir: "data/processed"
+  sample_data_dir: "data/sample"
+  metadata_filename: "metadata.json"
+
+features:
+  # Static Topographic Descriptors (derived from DEM)
+  topographic:
+    use_elevation: true              # Raw DEM height [m]
+    use_slope: true                  # First spatial derivative gradient magnitude [m/m]
+    use_aspect: true                 # Direction of steepest descent (sin & cos components)
+    use_curvature: true              # Profile & planform surface curvature [1/m]
+    use_laplacian: true              # Divergence of gradient / elevation concavity [1/m]
+    use_neighbour_diffs: true        # 8-neighbourhood mean, min, max elevation deltas [m]
+    use_local_roughness: true        # Elevation standard deviation in 3x3 and 5x5 kernels [m]
+    use_tpi: true                    # Topographic Position Index (z - mean_local) [m]
+    use_flow_accumulation: true      # Proxy downslope flow accumulation area [m²]
+
+  # Dynamic Meteorological Forcing (derived from rainfall hyetograph)
+  rainfall:
+    use_intensity_current: true      # Instantaneous precipitation rate [mm/5min]
+    use_cumulative: true             # Total storm precipitation accumulated so far [mm]
+    window_steps: [3, 6, 12]         # Rolling window sizes: 3 steps (15m), 6 steps (30m), 12 steps (60m)
+    use_rolling_sums: true           # Window precipitation accumulation [mm]
+    use_rolling_means: true          # Window mean precipitation intensity [mm/5min]
+    use_peak_intensity_so_far: true  # Maximum intensity observed up to current time [mm/5min]
+    use_rate_of_change: true         # Rainfall acceleration / surge intensity delta [mm/5min²]
+
+  # Dynamic Hydraulic State & Antecedent Observations (derived from water depth)
+  hydraulic:
+    use_current_depth: true          # Water depth observed at time t [m]
+    lag_steps: [1, 2, 3]             # Antecedent depth observations: -1 step (-5m), -2 steps (-10m), -3 steps (-15m)
+    use_rate_of_rise: true           # First temporal derivative (dh/dt) [m/min]
+    use_acceleration: true           # Second temporal derivative (d²h/dt²) [m/min²]
+    use_neighbour_depths: true       # Mean and max water depth in 3x3 spatial neighborhood [m]
+    use_hydraulic_head: true         # Piezometric water surface elevation (z + h) [m]
+    use_hydraulic_gradient: true     # Momentum-driving water surface gradient ||∇(z + h)|| [m/m]
+
+  # Spatial Grid Coordinates & Temporal Progress
+  spatial_temporal:
+    use_normalized_coords: true      # Normalized grid coordinates: x/(W-1), y/(H-1) in [0, 1]
+    use_dist_to_center: true         # Euclidean distance from domain center in [0, 1]
+    use_time_elapsed_min: true       # Minutes elapsed since rainfall onset [min]
+    use_time_fraction: true          # Normalized progress through current event in [0, 1]
+
+# Prediction Target Definitions
+targets:
+  # Primary Target: Continuous future water depth at a specific forecast horizon
+  primary_target: "target_depth_lead_30m"
+  
+  # Multi-Horizon Forecast Leads (in 5-minute time steps)
+  lead_times_steps:
+    - 1   # Lead +5 min (Next immediate frame)
+    - 3   # Lead +15 min (Flash flood onset)
+    - 6   # Lead +30 min (Primary municipal response horizon)
+    - 12  # Lead +60 min (Strategic basin evacuation horizon)
+  
+  # Peak Depth Forecasting
+  include_peak_remaining: true       # Peak water depth remaining from time t to end of event [m]
+  include_event_peak: true           # Overall event peak water depth at cell (i, j) [m]
+
+  # Discretized Flood Hazard Classification Target
+  classification:
+    enabled: true
+    target_column: "target_hazard_class_lead_30m"
+    thresholds_m: [0.03, 0.15, 0.30] # Negligible (<3cm), Shallow (3-15cm), Moderate (15-30cm), Deep (>=30cm)
+    class_labels:
+      0: "dry_negligible"            # h < 0.03 m
+      1: "shallow_caution"           # 0.03 m <= h < 0.15 m
+      2: "moderate_hazard"           # 0.15 m <= h < 0.30 m
+      3: "critical_inundation"       # h >= 0.30 m
+
+# Preprocessing & Data Cleaning
+preprocessing:
+  handle_missing_dem: "impute_with_flag"  # Impute NaNs with local terrain median and append 'is_building_mask'
+  filter_dry_cells_ratio: 0.0             # Keep all cells by default; set > 0 to downsample permanently dry cells
+  clip_negative_depths: true              # Enforce non-negativity constraint: h = max(0.0, h)
+  scale_features: false                   # XGBoost is decision-tree based and scale-invariant
+  scaler_type: "robust"                   # Options: "robust", "standard", "none"
+
+# Strict Event-Aware Dataset Splitting (Zero Data Leakage)
+splitting:
+  strategy: "event_aware"
+  train_ratio: 0.60
+  val_ratio: 0.20
+  test_ratio: 0.20
+  random_seed: 42
+  stratify_by_event_severity: true        # Ensure balanced storm intensities across splits
+

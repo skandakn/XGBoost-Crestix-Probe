@@ -1,0 +1,166 @@
+{
+  "overall_continuous_metrics": {
+    "mae": 0.0326,
+    "rmse": 0.0736,
+    "r2": 0.8621,
+    "bias": -0.0266,
+    "max_error": 0.7766
+  },
+  "event_metrics": {
+    "event_09_test_heldout_20yr_benchmark": {
+      "mae": 0.0087,
+      "rmse": 0.0139,
+      "r2": 0.9739,
+      "bias": -0.0014,
+      "max_error": 0.103
+    },
+    "event_10_test_heldout_100yr_design_flood": {
+      "mae": 0.0288,
+      "rmse": 0.0595,
+      "r2": 0.9046,
+      "bias": -0.0229,
+      "max_error": 0.5814
+    },
+    "event_11_test_heldout_200yr_extreme_inundation": {
+      "mae": 0.0504,
+      "rmse": 0.1009,
+      "r2": 0.8154,
+      "bias": -0.0452,
+      "max_error": 0.7766
+    }
+  },
+  "peak_depth_errors": {
+    "event_09_test_heldout_20yr_benchmark": {
+      "true_peak_m": 0.3743,
+      "pred_peak_m": 0.434,
+      "peak_abs_error_m": 0.0597,
+      "peak_rel_error_pct": 15.94
+    },
+    "event_10_test_heldout_100yr_design_flood": {
+      "true_peak_m": 0.8659,
+      "pred_peak_m": 0.6621,
+      "peak_abs_error_m": 0.2037,
+      "peak_rel_error_pct": -23.53
+    },
+    "event_11_test_heldout_200yr_extreme_inundation": {
+      "true_peak_m": 1.0987,
+      "pred_peak_m": 0.662,
+      "peak_abs_error_m": 0.4367,
+      "peak_rel_error_pct": -39.75
+    }
+  },
+  "horizon_breakdown": {
+    "15min": {
+      "mae": 0.0216,
+      "rmse": 0.0486,
+      "r2": 0.9394,
+      "bias": -0.0148,
+      "max_error": 0.4399
+    },
+    "30min": {
+      "mae": 0.0223,
+      "rmse": 0.0499,
+      "r2": 0.9362,
+      "bias": -0.0178,
+      "max_error": 0.437
+    },
+    "45min": {
+      "mae": 0.0275,
+      "rmse": 0.0582,
+      "r2": 0.9134,
+      "bias": -0.0228,
+      "max_error": 0.4489
+    },
+    "60min": {
+      "mae": 0.0337,
+      "rmse": 0.0687,
+      "r2": 0.8795,
+      "bias": -0.0283,
+      "max_error": 0.4807
+    },
+    "90min": {
+      "mae": 0.043,
+      "rmse": 0.09,
+      "r2": 0.7952,
+      "bias": -0.0371,
+      "max_error": 0.6226
+    },
+    "120min": {
+      "mae": 0.0474,
+      "rmse": 0.107,
+      "r2": 0.7129,
+      "bias": -0.0386,
+      "max_error": 0.7766
+    }
+  },
+  "flood_risk_classification": {
+    "regressor_derived": {
+      "accuracy": 0.8777,
+      "f1_macro": 0.8619,
+      "f1_weighted": 0.8767,
+      "confusion_matrix": [
+        [
+          17604,
+          500,
+          0,
+          0
+        ],
+        [
+          1884,
+          7411,
+          310,
+          0
+        ],
+        [
+          139,
+          1005,
+          6256,
+          142
+        ],
+        [
+          40,
+          183,
+          1188,
+          7402
+        ]
+      ]
+    },
+    "dedicated_classifier": {
+      "accuracy": 0.8624,
+      "f1_macro": 0.835,
+      "f1_weighted": 0.8611,
+      "confusion_matrix": [
+        [
+          17906,
+          198,
+          0,
+          0
+        ],
+        [
+          1597,
+          7826,
+          182,
+          0
+        ],
+        [
+          103,
+          1317,
+          6041,
+          81
+        ],
+        [
+          44,
+          201,
+          2340,
+          6228
+        ]
+      ]
+    }
+  },
+  "heldout_sample_count": 44064,
+  "heldout_events": [
+    "event_09_test_heldout_20yr_benchmark",
+    "event_10_test_heldout_100yr_design_flood",
+    "event_11_test_heldout_200yr_extreme_inundation"
+  ]
+}

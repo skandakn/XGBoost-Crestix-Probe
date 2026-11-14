@@ -1,0 +1,104 @@
+{
+  "model_version": "2.0.0-common",
+  "model_type": "XGBRegressor",
+  "feature_order": [
+    "elevation",
+    "slope_magnitude",
+    "slope_x",
+    "slope_y",
+    "aspect_sin",
+    "aspect_cos",
+    "laplacian_elevation",
+    "profile_curvature",
+    "plan_curvature",
+    "local_elevation_std_3x3",
+    "local_elevation_std_5x5",
+    "tpi_3x3",
+    "tpi_5x5",
+    "neighbour_elevation_diff_mean",
+    "neighbour_elevation_diff_min",
+    "neighbour_elevation_diff_max",
+    "flow_accumulation_proxy",
+    "is_building_mask",
+    "rainfall_intensity_current",
+    "rainfall_cumulative",
+    "rainfall_max_so_far",
+    "rainfall_rate_of_change",
+    "rainfall_window_15m",
+    "rainfall_mean_15m",
+    "rainfall_window_30m",
+    "rainfall_mean_30m",
+    "rainfall_window_60m",
+    "rainfall_mean_60m",
+    "current_water_depth",
+    "water_depth_rate_of_rise",
+    "water_depth_acceleration",
+    "neighbour_water_depth_mean_3x3",
+    "neighbour_water_depth_max_3x3",
+    "hydraulic_head",
+    "hydraulic_head_grad_mag",
+    "water_depth_lag_5m",
+    "water_depth_lag_10m",
+    "water_depth_lag_15m",
+    "norm_coord_x",
+    "norm_coord_y",
+    "dist_to_center",
+    "time_since_onset_min",
+    "time_fraction"
+  ],
+  "feature_count": 43,
+  "target_column": "target_depth_lead_30m",
+  "flood_label_column": "target_is_flooded_lead_30m",
+  "flood_threshold_m": 0.03,
+  "regressor_hyperparameters": {
+    "n_estimators": 450,
+    "max_depth": 6,
+    "learning_rate": 0.04,
+    "subsample": 0.85,
+    "colsample_bytree": 0.85,
+    "min_child_weight": 4,
+    "gamma": 0.05,
+    "reg_alpha": 0.15,
+    "reg_lambda": 1.2,
+    "objective": "reg:squarederror",
+    "eval_metric": "rmse",
+    "random_state": 42,
+    "n_jobs": -1
+  },
+  "early_stopping_rounds": 35,
+  "best_iteration": 179,
+  "splits": {
+    "train_events": [
+      "event_002",
+      "event_003",
+      "event_005"
+    ],
+    "train_rows": 92160,
+    "val_events": [
+      "event_001"
+    ],
+    "val_rows": 30720,
+    "test_events": [
+      "event_004"
+    ],
+    "test_rows": 30720
+  },
+  "test_metrics": {
+    "regression": {
+      "mae_m": 0.01783,
+      "rmse_m": 0.023477,
+      "r2": 0.931771,
+      "bias_m": 0.002054
+    },
+    "classification_threshold_0_03m": {
+      "flood_threshold_m": 0.03,
+      "positive_rate_true": 0.938151,
+      "positive_rate_pred": 0.905469,
+      "auroc": 0.98223,
+      "pr_auc": 0.998823,
+      "f1_score": 0.973091,
+      "precision": 0.990653,
+      "recall": 0.956142
+    }
+  }
+}

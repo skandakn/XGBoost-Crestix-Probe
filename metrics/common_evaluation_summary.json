@@ -1,0 +1,62 @@
+{
+  "pipeline": "common_data_pipeline_v1",
+  "model_version": "2.0.0-common",
+  "target_column": "target_depth_lead_30m",
+  "flood_label_column": "target_is_flooded_lead_30m",
+  "flood_threshold_m": 0.03,
+  "feature_count": 43,
+  "best_iteration": 179,
+  "leakage_check": "PASSED",
+  "splits": {
+    "train_events": [
+      "event_002",
+      "event_003",
+      "event_005"
+    ],
+    "train_rows": 92160,
+    "val_events": [
+      "event_001"
+    ],
+    "val_rows": 30720,
+    "test_events": [
+      "event_004"
+    ],
+    "test_rows": 30720
+  },
+  "validation_metrics": {
+    "regression": {
+      "mae_m": 0.013111,
+      "rmse_m": 0.014263,
+      "r2": -2.218237,
+      "bias_m": 0.012965
+    },
+    "classification_threshold_0_03m": {
+      "flood_threshold_m": 0.03,
+      "positive_rate_true": 0.023275,
+      "positive_rate_pred": 0.490072,
+      "auroc": 0.706442,
+      "pr_auc": 0.064523,
+      "f1_score": 0.090679,
+      "precision": 0.047493,
+      "recall": 1.0
+    }
+  },
+  "test_metrics": {
+    "regression": {
+      "mae_m": 0.01783,
+      "rmse_m": 0.023477,
+      "r2": 0.931771,
+      "bias_m": 0.002054
+    },
+    "classification_threshold_0_03m": {
+      "flood_threshold_m": 0.03,
+      "positive_rate_true": 0.938151,
+      "positive_rate_pred": 0.905469,
+      "auroc": 0.98223,
+      "pr_auc": 0.998823,
+      "f1_score": 0.973091,
+      "precision": 0.990653,
+      "recall": 0.956142
+    }
+  }
+}

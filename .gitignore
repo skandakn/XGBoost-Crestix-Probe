@@ -1,0 +1,74 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Large model binaries, weights, arrays, and dataset files (Deliverables go to Google Drive)
+*.bin
+*.ubj
+*.joblib
+*.pkl
+*.npy
+*.npz
+*.parquet
+*.h5
+*.hdf5
+data/
+raw_data/
+local_artifacts/
+artifacts/models/*.ubj
+artifacts/models/*.bin
+artifacts/models/*.joblib
+artifacts/models/*.pkl
+artifacts/predictions/*.npy
+artifacts/shap/*.npy
+
+# OS specific
+.DS_Store
+Thumbs.db
